@@ -1,7 +1,7 @@
 :root {
   font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
-  color: #182033;
-  background: #f5f7fb;
+  color: #1d2730;
+  background: #f4f6f4;
 }
 
 * {
@@ -14,30 +14,40 @@ body {
 
 .app-shell {
   min-height: 100vh;
-  padding: 24px;
-  background:
-    linear-gradient(135deg, rgba(29, 78, 216, 0.08), rgba(15, 118, 110, 0.08)),
-    #f6f8fc;
+  padding: 24px clamp(16px, 3vw, 44px) 44px;
+  background: #f4f6f4;
 }
 
+.app-header,
 .workspace {
-  display: grid;
-  grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
-  gap: 20px;
   max-width: 1440px;
   margin: 0 auto;
 }
 
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 8px 0 22px;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(330px, 390px) minmax(0, 1fr);
+  gap: 24px;
+}
+
 .input-panel,
 .result-panel {
-  background: rgba(255, 255, 255, 0.94);
-  border: 1px solid #dce3ef;
+  background: #ffffff;
+  border: 1px solid #dce5e1;
   border-radius: 8px;
-  box-shadow: 0 18px 50px rgba(31, 41, 55, 0.08);
+  box-shadow: 0 12px 34px rgba(35, 55, 48, 0.07);
 }
 
 .input-panel {
-  padding: 22px;
+  padding: 24px;
   align-self: start;
   position: sticky;
   top: 24px;
@@ -45,14 +55,13 @@ body {
 
 .result-panel {
   min-height: calc(100vh - 48px);
-  padding: 28px;
+  padding: 30px clamp(20px, 3vw, 42px);
 }
 
 .brand-row {
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-bottom: 24px;
 }
 
 .brand-mark {
@@ -61,7 +70,7 @@ body {
   display: grid;
   place-items: center;
   border-radius: 8px;
-  background: #1d4ed8;
+  background: #1b5e57;
   color: #fff;
   font-weight: 800;
   font-size: 24px;
@@ -76,14 +85,69 @@ p {
 }
 
 h1 {
-  font-size: 20px;
+  font-size: 19px;
   line-height: 1.2;
+  letter-spacing: 0;
 }
 
 .brand-row p,
 .empty-state p,
-.step-card p {
+.step-card p,
+.compact-note {
   color: #64748b;
+}
+
+.header-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid #d4e0da;
+  border-radius: 999px;
+  color: #51615a;
+  font-size: 13px;
+  font-weight: 700;
+  background: #fbfcfb;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #8d9b95;
+}
+
+.is-running .status-dot {
+  background: #c77719;
+  animation: status-pulse 1.4s ease-in-out infinite;
+}
+.is-complete .status-dot { background: #168166; }
+
+@keyframes status-pulse {
+  50% { box-shadow: 0 0 0 5px rgba(199, 119, 25, 0.14); }
+}
+
+.panel-kicker,
+.log-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-kicker {
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e6ece8;
+}
+
+.panel-kicker h2 {
+  font-size: 18px;
+}
+
+.panel-index {
+  color: #7c8e86;
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .full-width {
@@ -95,15 +159,36 @@ h1 {
   gap: 10px;
 }
 
+.action-row .el-button {
+  flex: 1;
+}
+
 .log-panel {
-  margin-top: 24px;
-  padding-top: 18px;
+  margin-top: 26px;
+  padding-top: 20px;
   border-top: 1px solid #e5eaf3;
 }
 
 .panel-title {
-  font-weight: 700;
-  margin-bottom: 14px;
+  font-weight: 800;
+}
+
+.log-count {
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #e7f3ef;
+  color: #146653;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.log-panel .el-timeline {
+  padding-top: 18px;
+  margin-bottom: 0;
 }
 
 .result-header {
@@ -111,14 +196,14 @@ h1 {
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  margin-bottom: 18px;
-  padding-bottom: 18px;
+  margin-bottom: 10px;
+  padding-bottom: 22px;
   border-bottom: 1px solid #e5eaf3;
 }
 
 .eyebrow {
   display: inline-block;
-  color: #0f766e;
+  color: #146653;
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
@@ -127,7 +212,8 @@ h1 {
 }
 
 h2 {
-  font-size: 28px;
+  font-size: 27px;
+  letter-spacing: 0;
 }
 
 .alert {
@@ -138,16 +224,28 @@ h2 {
   display: grid;
   align-content: center;
   min-height: 420px;
-  border: 1px dashed #cbd5e1;
+  border: 1px dashed #bdd2c9;
   border-radius: 8px;
   padding: 40px;
   text-align: center;
-  background: #fbfdff;
+  background: #fbfdfb;
 }
 
 .empty-state h3 {
   font-size: 24px;
   margin-bottom: 10px;
+}
+
+.empty-symbol {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  margin: 0 auto 16px;
+  border-radius: 8px;
+  background: #e5f2ed;
+  color: #146653;
+  font-size: 23px;
 }
 
 .output-section {
@@ -200,7 +298,7 @@ h2 {
   align-items: center;
   gap: 10px;
   width: 100%;
-  color: #163153;
+  color: #284239;
 }
 
 .collapse-title small {
@@ -217,13 +315,16 @@ h2 {
   height: 25px;
   place-items: center;
   border-radius: 50%;
-  background: #e0f2fe;
-  color: #0369a1;
+  background: #e5f2ed;
+  color: #146653;
   font-size: 11px;
 }
 
 .deliverable-label {
-  color: #0f766e;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #146653;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0;
@@ -233,11 +334,11 @@ h2 {
 .output-section h3 {
   font-size: 19px;
   margin-bottom: 12px;
-  color: #163153;
+  color: #284239;
 }
 
 .markdown-body {
-  color: #26364d;
+  color: #34443d;
   line-height: 1.75;
   font-size: 15px;
 }
@@ -266,7 +367,7 @@ h2 {
 }
 
 .markdown-body th {
-  background: #eef4ff;
+  background: #edf5f1;
 }
 
 .steps-grid {
@@ -276,7 +377,7 @@ h2 {
 }
 
 .step-card {
-  border: 1px solid #dbe4ef;
+  border: 1px solid #d7e5df;
   border-radius: 8px;
   padding: 14px;
   background: #ffffff;
@@ -288,8 +389,8 @@ h2 {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #e0f2fe;
-  color: #0369a1;
+  background: #e5f2ed;
+  color: #146653;
   font-weight: 800;
   margin-bottom: 10px;
 }
@@ -299,6 +400,25 @@ h2 {
   margin-bottom: 8px;
 }
 
+.el-button:focus-visible,
+.el-input__wrapper:focus-within,
+.el-textarea__inner:focus-visible,
+.el-select__wrapper:focus-within {
+  outline: 2px solid #168166;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
 @media (max-width: 980px) {
   .app-shell {
     padding: 14px;
@@ -306,6 +426,10 @@ h2 {
 
   .workspace {
     grid-template-columns: 1fr;
+  }
+
+  .app-header {
+    align-items: flex-start;
   }
 
   .input-panel {
