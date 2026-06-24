@@ -39,7 +39,7 @@ class LLMClient:
             "temperature": temperature,
         }
         headers = {"Authorization": f"Bearer {self.openai_api_key}", "Content-Type": "application/json"}
-        async with httpx.AsyncClient(timeout=60) as client:
+        async with httpx.AsyncClient(timeout=180) as client:
             response = await client.post(url, headers=headers, json=payload)
             response.raise_for_status()
             data = response.json()
