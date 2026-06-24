@@ -71,14 +71,22 @@ async def optimize(request: OptimizeRequest) -> OptimizeResponse:
         solution_generator = SolutionGenerator(llm)
         report_generator = ReportGenerator(REPORT_DIR)
 
-        logs.append("正在分析问题：检查目标、条件、约束和输出格式。")
-        analysis = await diagnoser.run(request.question, request.task_type)
+        if llm.provider in {"openai", "qwen"}:
+            logs.append("正在分析问题：检查目标、条件、约束和输出格式。")
+            logs.append("正在优化提示词并拆解任务：使用结构化推理生成执行计划。")
+            bundle = await solution_generator.run_plan_once(request.question, request.task_type)
+            analysis = bundle["analysis"]
+            optimized_prompt = bundle["optimized_prompt"]
+            steps = bundle["steps"]
+        else:
+            logs.append("正在分析问题：检查目标、条件、约束和输出格式。")
+            analysis = await diagnoser.run(request.question, request.task_type)
 
-        logs.append("正在优化提示词：补充角色、任务目标、步骤和质量标准。")
-        optimized_prompt = await optimizer.run(request.question, request.task_type, analysis)
+            logs.append("正在优化提示词：补充角色、任务目标、步骤和质量标准。")
+            optimized_prompt = await optimizer.run(request.question, request.task_type, analysis)
 
-        logs.append("正在拆解任务：将复杂问题分解为可执行子任务。")
-        steps = await decomposer.run(optimized_prompt, request.task_type)
+            logs.append("正在拆解任务：将复杂问题分解为可执行子任务。")
+            steps = await decomposer.run(optimized_prompt, request.task_type)
 
         logs.append("正在调用文本摘要工具：压缩问题诊断与优化结果。")
         summary = tools.summarize_text(f"{analysis}\n{optimized_prompt}", max_chars=700)
@@ -94,7 +102,7 @@ async def optimize(request: OptimizeRequest) -> OptimizeResponse:
             f"结构化输出工具输出：\n{steps_markdown}",
         ]
 
-        logs.append("正在生成最终答案：基于优化提示词和任务拆解完成求解。")
+        logs.append("正在生成最终答案：基于优化提示词、任务拆解和工具结果完成求解。")
         solution = await solution_generator.run(request.question, optimized_prompt, steps, "\n".join(tool_logs))
 
         logs.append("正在生成 PDF 报告：汇总完整求解过程。")
