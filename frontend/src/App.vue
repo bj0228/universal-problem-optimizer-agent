@@ -83,10 +83,42 @@
         <el-skeleton v-if="loading && !result" :rows="10" animated />
 
         <template v-if="result">
-          <ResultSection title="原始问题分析" :content="result.analysis" />
-          <ResultSection title="问题优化版本" :content="result.optimized_prompt" />
+          <section class="process-section">
+            <div class="process-heading">
+              <div>
+                <span class="eyebrow">Agent Process</span>
+                <h3>过程产物</h3>
+              </div>
+              <p>诊断与提示词优化内容已收起，不干扰最终结果阅读。</p>
+            </div>
+
+            <el-collapse v-model="activeProcessSections" class="process-collapse">
+              <el-collapse-item name="analysis">
+                <template #title>
+                  <div class="collapse-title">
+                    <span class="collapse-badge">01</span>
+                    <span>原始问题分析</span>
+                    <small>问题诊断</small>
+                  </div>
+                </template>
+                <div class="markdown-body" v-html="renderMarkdown(result.analysis)" />
+              </el-collapse-item>
+
+              <el-collapse-item name="prompt">
+                <template #title>
+                  <div class="collapse-title">
+                    <span class="collapse-badge">02</span>
+                    <span>问题优化版本</span>
+                    <small>可复用提示词</small>
+                  </div>
+                </template>
+                <div class="markdown-body" v-html="renderMarkdown(result.optimized_prompt)" />
+              </el-collapse-item>
+            </el-collapse>
+          </section>
 
           <section class="output-section">
+            <div class="deliverable-label">Final Deliverable</div>
             <h3>问题拆解步骤</h3>
             <div class="steps-grid">
               <article v-for="step in result.steps" :key="step.step" class="step-card">
@@ -118,9 +150,14 @@ const loading = ref(false)
 const result = ref(null)
 const error = ref('')
 const liveLogs = ref([])
+const activeProcessSections = ref([])
 
 const taskTypes = ['学习类', '代码类', '写作类', '规划类', '科研类', '通用类']
 const visibleLogs = computed(() => result.value?.logs || liveLogs.value)
+
+function renderMarkdown(content) {
+  return marked.parse(content || '')
+}
 
 const ResultSection = defineComponent({
   props: {
@@ -133,7 +170,7 @@ const ResultSection = defineComponent({
         h('h3', props.title),
         h('div', {
           class: 'markdown-body',
-          innerHTML: marked.parse(props.content || '')
+          innerHTML: renderMarkdown(props.content)
         })
       ])
   }
@@ -153,6 +190,7 @@ async function runAgent() {
   loading.value = true
   error.value = ''
   result.value = null
+  activeProcessSections.value = []
   liveLogs.value = [
     '正在分析问题：检查目标、条件、约束和输出格式。',
     '正在优化提示词：补充角色、任务目标、步骤和质量标准。',
