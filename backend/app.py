@@ -1,4 +1,5 @@
 import os
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +14,8 @@ from agent import ProblemDiagnoser, PromptOptimizer, ReportGenerator, SolutionGe
 from llm import LLMClient
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 BASE_DIR = Path(__file__).resolve().parent
 REPORT_DIR = BASE_DIR / "reports"
@@ -117,7 +120,11 @@ async def optimize(request: OptimizeRequest) -> OptimizeResponse:
             logs=logs,
         )
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"智能体运行失败：{exc}") from exc
+        logger.exception("Agent optimization failed for task_type=%s", request.task_type)
+        raise HTTPException(
+            status_code=500,
+            detail=f"智能体运行失败（{type(exc).__name__}）：{exc}",
+        ) from exc
 
 
 @app.get("/api/report/{report_id}")
