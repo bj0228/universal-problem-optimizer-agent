@@ -8,6 +8,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.cidfonts import UnicodeCIDFont
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import ListFlowable, ListItem, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
@@ -114,7 +115,9 @@ class ReportGenerator:
                     return "ChineseFont"
                 except Exception:
                     continue
-        return "Helvetica"
+        # Built-in CID font keeps Chinese reports readable on minimal Linux hosts such as Render.
+        pdfmetrics.registerFont(UnicodeCIDFont("STSong-Light"))
+        return "STSong-Light"
 
     @staticmethod
     def _escape(text: str) -> str:
