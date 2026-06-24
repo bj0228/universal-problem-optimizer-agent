@@ -39,11 +39,7 @@ class LLMClient:
             "temperature": temperature,
         }
         headers = {"Authorization": f"Bearer {self.openai_api_key}", "Content-Type": "application/json"}
-        async with httpx.AsyncClient(timeout=180) as client:
-            response = await client.post(url, headers=headers, json=payload)
-            response.raise_for_status()
-            data = response.json()
-        return data["choices"][0]["message"]["content"].strip()
+        return await self._post_chat(url, headers, payload, "OpenAI")
 
     async def _qwen_chat(self, system_prompt: str, user_prompt: str, temperature: float) -> str:
         url = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
@@ -56,11 +52,33 @@ class LLMClient:
             "temperature": temperature,
         }
         headers = {"Authorization": f"Bearer {self.dashscope_api_key}", "Content-Type": "application/json"}
-        async with httpx.AsyncClient(timeout=60) as client:
-            response = await client.post(url, headers=headers, json=payload)
-            response.raise_for_status()
-            data = response.json()
-        return data["choices"][0]["message"]["content"].strip()
+        return await self._post_chat(url, headers, payload, "千问")
+
+    async def _post_chat(
+        self, url: str, headers: dict[str, str], payload: dict[str, Any], provider_name: str
+    ) -> str:
+        # The agent invokes the model multiple times; allow slower public endpoints time to respond.
+        timeout = httpx.Timeout(180.0, connect=20.0)
+        try:
+            async with httpx.AsyncClient(timeout=timeout) as client:
+                response = await client.post(url, headers=headers, json=payload)
+        except httpx.TimeoutException as exc:
+            raise RuntimeError(f"{provider_name} API 请求超时，请稍后重试或选择响应更快的模型。") from exc
+        except httpx.HTTPError as exc:
+            raise RuntimeError(f"{provider_name} API 网络请求失败：{exc}") from exc
+
+        if response.is_error:
+            try:
+                details = response.json()
+            except ValueError:
+                details = response.text
+            raise RuntimeError(f"{provider_name} API 返回 {response.status_code}：{details}")
+
+        try:
+            content = response.json()["choices"][0]["message"]["content"]
+        except (KeyError, IndexError, TypeError, ValueError) as exc:
+            raise RuntimeError(f"{provider_name} API 响应格式异常：{response.text[:800]}") from exc
+        return str(content).strip()
 
     def _mock_response(self, system_prompt: str, user_prompt: str) -> str:
         lower = f"{system_prompt}\n{user_prompt}".lower()
